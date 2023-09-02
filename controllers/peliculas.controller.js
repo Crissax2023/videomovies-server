@@ -66,10 +66,24 @@ const getOnePelicula = async (req,res,next) =>{
     ///res.status.json({message:`este es el id pelicula: ${peliculasId}`})
 }
 
-const updatePelicula = (req,res,next) =>{
+const updatePelicula = async (req,res,next) =>{
 
     const {peliculasId} = req.params
-    res.status.json({message:`este es el update pelicula: ${peliculasId}`})
+try{
+    if(!mongoose.Types.ObjectId.isValid(peliculasId)) 
+         {
+             res.status(400).json({message:'ID incorrecto'})
+             return
+         }
+
+         const updatevideo = await video.findByIdAndUpdate(peliculasId, req.body, {new:true})
+         res.status(200).json(updatevideo)
+        }
+    catch(e){
+        res.status(500).json(e)
+    }
+
+    //res.status.json({message:`este es el update pelicula: ${peliculasId}`})
 }
 
 const deletePelicula = async(req,res,next) =>{
