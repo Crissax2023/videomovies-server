@@ -1,15 +1,69 @@
-const getAllPeliculas = (req,res,next) =>{
-    res.status(200).json({message:'todas las peliculas'})
+const mongoose = require('mongoose');
+const video = require('../models/video.model')
+
+const getAllPeliculas = async(req,res,next) =>{
+
+    try {
+        const videos =  await video
+        .find()
+        .populate('comentarios')
+        res.status(200).json(videos)
+    } catch (error) {
+        res.status(500).json(error)
+    }
+    //res.status(200).json({message:'todas las peliculas'})
 }
 
-const createPelicula = (req,res,next) =>{
-    res.status(201).json({message:'nueva pelicula'})
+const createPelicula = async(req,res,next) =>{
+
+    const {
+        title,
+        year,
+        director,
+        duracion,
+        genero,
+        url
+    } =req.body
+
+    try{
+        const newVideo= await video.create({        
+            title,
+            year,
+            director,
+            duracion,
+            genero,
+            url,
+        comentarios:[]
+        })
+            res.status(201).json(newVideo)
+    }catch(e){
+
+        res.status(500).json(e)
+
+    }
+
 }
 
-const getOnePelicula = (req,res,next) =>{
+const getOnePelicula = async (req,res,next) =>{
 
     const {peliculasId} = req.params
-    res.status.json({message:`este es el id pelicula: ${peliculasId}`})
+
+    try{
+
+           if(!mongoose.Types.ObjectId.isValid(peliculasId)) 
+            {
+                res.status(400).json({message:'ID incorrecto'})
+                return
+            }
+            const Video = await video.findById(peliculasId)
+            .populate('comentarios')
+            res.status(200).json(Video)
+    }catch(e){
+        res.status(500).json(e)
+    }
+
+
+    ///res.status.json({message:`este es el id pelicula: ${peliculasId}`})
 }
 
 const updatePelicula = (req,res,next) =>{
@@ -18,10 +72,25 @@ const updatePelicula = (req,res,next) =>{
     res.status.json({message:`este es el update pelicula: ${peliculasId}`})
 }
 
-const deletePelicula = (req,res,next) =>{
+const deletePelicula = async(req,res,next) =>{
 
     const {peliculasId} = req.params
-    res.status.json({message:`este es el id delete pelicula: ${peliculasId}`})
+    try{
+
+        if(!mongoose.Types.ObjectId.isValid(peliculasId)) 
+         {
+             res.status(400).json({message:'ID incorrecto'})
+             return
+         }
+         const Video = await video.findByIdAndRemove(peliculasId)
+         res.status(200).json({message:`Video Eliminado id ${peliculasId}`})
+ }catch(e){
+     res.status(500).json(e)
+ }
+  
+  
+  
+    // res.status.json({message:`este es el id delete pelicula: ${peliculasId}`})
 }
 
 module.exports =
